@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Trash2, FileText, FileImage, File, Loader2, Eye, X } from "lucide-react";
+import Link from "next/link";
+import { Download, Trash2, FileText, FileImage, File, Loader2, ExternalLink } from "lucide-react";
 import { trpc } from "@/lib/trpc/client";
 import { Button } from "@/ui/button";
 import {
@@ -13,29 +14,33 @@ import {
   DialogTitle,
 } from "@/ui/dialog";
 import { formatBytes, formatDate } from "@/lib/utils";
-import { PdfViewer } from "./pdf-viewer";
+
+export interface FileItem {
+  id: string;
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+  createdAt: Date | string;
+}
 
 interface FileListProps {
+  /** Called when file item is clicked (for inline preview) */
+  onSelect?: (file: FileItem) => void;
+  /** Currently selected file id (for highlighting) */
+  selectedFileId?: string;
   downloadLabel?: string;
   deleteLabel?: string;
   viewLabel?: string;
-  onDownload?: (fileId: string) => void;
-  onDelete?: (fileId: string) => void;
-}
-
-interface ViewingFile {
-  id: string;
-  name: string;
-  url: string;
 }
 
 export function FileList({
+  onSelect,
+  selectedFileId,
   downloadLabel = "Download",
   deleteLabel = "Delete",
   viewLabel = "View",
 }: FileListProps) {
   const [deleteFileId, setDeleteFileId] = useState<string | null>(null);
-  const [viewingFile, setViewingFile] = useState<ViewingFile | null>(null);
 
   const { data: files, isLoading } = trpc.files.list.useQuery();
   const utils = trpc.useUtils();
@@ -57,29 +62,21 @@ export function FileList({
     return File;
   };
 
-  const handleDownload = (fileId: string) => {
-    // Use proxy API with download flag
+  const handleDownload = (e: React.MouseEvent, fileId: string) => {
+    e.stopPropagation();
     const link = document.createElement("a");
     link.href = `/api/files/${fileId}?download=true`;
     link.click();
   };
 
-  const handleView = (fileId: string, fileName: string) => {
-    // Use proxy API to avoid CORS issues with R2
-    setViewingFile({
-      id: fileId,
-      name: fileName,
-      url: `/api/files/${fileId}`,
-    });
-  };
-
-  const closeViewer = () => {
-    setViewingFile(null);
-  };
-
   const handleDelete = async () => {
     if (!deleteFileId) return;
     await deleteMutation.mutateAsync({ id: deleteFileId });
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent, fileId: string) => {
+    e.stopPropagation();
+    setDeleteFileId(fileId);
   };
 
   if (isLoading) {
@@ -105,11 +102,16 @@ export function FileList({
         {files.map((file) => {
           const FileIcon = getFileIcon(file.mimeType);
           const isPdf = file.mimeType === "application/pdf";
+          const isSelected = selectedFileId === file.id;
+          const isClickable = isPdf && onSelect;
 
           return (
             <div
               key={file.id}
-              className="flex items-center gap-4 p-4 hover:bg-muted/50"
+              className={`flex items-center gap-4 p-4 transition-colors ${
+                isClickable ? "cursor-pointer hover:bg-muted/50" : ""
+              } ${isSelected ? "bg-muted" : ""}`}
+              onClick={() => isPdf && onSelect?.(file)}
             >
               <FileIcon className="h-10 w-10 text-muted-foreground" />
               <div className="flex-1 min-w-0">
@@ -124,16 +126,19 @@ export function FileList({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleView(file.id, file.originalName)}
+                    asChild
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <Eye className="mr-2 h-4 w-4" />
-                    {viewLabel}
+                    <Link href={`/preview/${file.id}`} target="_blank">
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      {viewLabel}
+                    </Link>
                   </Button>
                 )}
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleDownload(file.id)}
+                  onClick={(e) => handleDownload(e, file.id)}
                 >
                   <Download className="mr-2 h-4 w-4" />
                   {downloadLabel}
@@ -141,7 +146,7 @@ export function FileList({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setDeleteFileId(file.id)}
+                  onClick={(e) => handleDeleteClick(e, file.id)}
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
                   {deleteLabel}
@@ -178,33 +183,6 @@ export function FileList({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* PDF Viewer Section */}
-      {viewingFile && (
-        <div className="mt-6 rounded-lg border bg-card">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b px-4 py-3">
-            <h3 className="truncate font-semibold">{viewingFile.name}</h3>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleDownload(viewingFile.id)}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Download
-              </Button>
-              <Button variant="ghost" size="icon" onClick={closeViewer}>
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-          {/* PDF Viewer */}
-          <div className="p-4">
-            <PdfViewer url={viewingFile.url} />
-          </div>
-        </div>
-      )}
     </>
   );
 }

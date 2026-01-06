@@ -8,6 +8,14 @@ const nextConfig: NextConfig = {
     config.resolve.alias.canvas = false;
     return config;
   },
+  async rewrites() {
+    return [
+      {
+        source: "/preview/:id",
+        destination: "/api/files/:id",
+      },
+    ];
+  },
 };
 
 export default nextConfig;
