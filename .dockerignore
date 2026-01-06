@@ -1,0 +1,49 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Build outputs
+.next
+out
+build
+dist
+
+# Environment files (contain secrets)
+.env
+.env.*
+!.env.example
+
+# IDE and editor
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Documentation (optional, remove if needed in image)
+*.md
+!README.md
+
+# Drizzle migrations (if not needed at runtime)
+drizzle
