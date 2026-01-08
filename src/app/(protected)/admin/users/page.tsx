@@ -1,4 +1,4 @@
-import { UserList } from "@/features/admin-users";
+import { UserList } from "@/widgets";
 
 export default function AdminUsersPage() {
   return (

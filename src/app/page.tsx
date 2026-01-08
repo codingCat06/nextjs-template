@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/ui/button";
+import { Button } from "@/shared/ui";
 import { FileText, Shield, Upload } from "lucide-react";
 
 export default function HomePage() {

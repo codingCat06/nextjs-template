@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "@/core/auth/server";
 import { db } from "@/server/db";
-import { file } from "@/server/db/schema";
+import { file } from "@/server/db/schema/index";
 import { eq, and } from "drizzle-orm";
 import { getFileStream } from "@/server/storage/r2";
 

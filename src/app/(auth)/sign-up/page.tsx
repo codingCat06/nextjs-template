@@ -4,17 +4,18 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signUp } from "@/core/auth/client";
-import { Button } from "@/ui/button";
-import { Input } from "@/ui/input";
-import { Label } from "@/ui/label";
 import {
+  Button,
+  Input,
+  Label,
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/ui/card";
+} from "@/shared/ui";
+import { OAuthButtons } from "@/widgets";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -65,12 +66,12 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="container flex h-[calc(100vh-3.5rem)] items-center justify-center">
+    <div className="container flex h-[calc(100vh-3.5rem)] items-center justify-center py-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
           <CardDescription>
-            Enter your details to create your account
+            Choose your preferred sign up method
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -80,6 +81,21 @@ export default function SignUpPage() {
                 {error}
               </div>
             )}
+
+            {/* OAuth Buttons */}
+            <OAuthButtons disabled={isLoading} />
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">
+                  Or continue with email
+                </span>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
               <Input

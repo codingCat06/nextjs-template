@@ -1,12 +1,31 @@
 # FEATURES.md
 
-Feature catalog for the Next.js Full-Stack Template.
+Feature catalog for the Next.js Full-Stack Template (FSD Architecture).
 
-## Core Features
+---
+
+## FSD Layer Overview
+
+```
+shared → entities → features → widgets → app
+```
+
+| Layer | Purpose |
+|-------|---------|
+| `shared/` | Reusable UI components, utilities (no business logic) |
+| `entities/` | Business entity types (user, file) |
+| `features/` | Complex user interaction logic (hooks) |
+| `widgets/` | Smart composite components (use tRPC, compose features) |
+| `core/` | Auth, theme (cross-cutting) |
+| `server/` | DB, storage, tRPC (cross-cutting) |
+
+---
+
+## Core (`src/core/`)
 
 ### Authentication (`src/core/auth/`)
 
-Email/password authentication using Better Auth.
+Email/password + OAuth authentication using Better Auth.
 
 | Export | Type | Description |
 |--------|------|-------------|
@@ -20,7 +39,16 @@ Email/password authentication using Better Auth.
 | `requireAuth` | Function | Guard for protected routes |
 | `requireAdmin` | Function | Guard for admin routes |
 
-**Env vars:** `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_URL`
+**OAuth Providers:** Google, GitHub, Naver
+
+**Env vars:**
+- `DATABASE_URL`
+- `BETTER_AUTH_SECRET`
+- `BETTER_AUTH_URL`
+- `NEXT_PUBLIC_APP_URL`
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+- `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`
+- `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`
 
 ### Theme (`src/core/theme/`)
 
@@ -35,38 +63,11 @@ Light/dark mode with system preference detection.
 
 ---
 
-## Feature Modules
+## Shared Layer (`src/shared/`)
 
-### File Management (`src/features/file-management/`)
+### UI Components (`src/shared/ui/`)
 
-Upload, list, download, and delete files via Cloudflare R2.
-
-| Export | Type | Description |
-|--------|------|-------------|
-| `FileUpload` | Component | Drag & drop file uploader |
-| `FileList` | Component | List of user's files with actions |
-| `PdfViewer` | Component | PDF viewer using pdf.js |
-
-**Props:**
-- `FileUpload`: `onUploadComplete?`, `maxSizeBytes?`, `acceptedTypes?`
-- `FileList`: `downloadLabel?`, `deleteLabel?`, `viewLabel?`
-- `PdfViewer`: `url` (required)
-
-**Env vars:** `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`
-
-### Admin Users (`src/features/admin-users/`)
-
-User management for administrators.
-
-| Export | Type | Description |
-|--------|------|-------------|
-| `UserList` | Component | Admin user list with status controls |
-
----
-
-## UI Components (`src/ui/`)
-
-Reusable shadcn/ui-style components.
+Reusable shadcn/ui-style components. No business logic.
 
 | Component | Description |
 |-----------|-------------|
@@ -80,7 +81,114 @@ Reusable shadcn/ui-style components.
 | `Progress` | Progress bar |
 | `Switch` | Toggle switch |
 | `ThemeToggle` | Light/dark mode toggle |
-| `Header` | Global navigation header |
+
+### Utilities (`src/shared/lib/`)
+
+| Export | Location | Description |
+|--------|----------|-------------|
+| `cn` | `utils.ts` | Tailwind class name merger |
+| `formatBytes` | `utils.ts` | Format bytes to human-readable |
+| `formatDate` | `utils.ts` | Format date to locale string |
+| `trpc` | `trpc/client.ts` | tRPC client hooks |
+| `TRPCProvider` | `trpc/provider.tsx` | tRPC React Query provider |
+
+---
+
+## Entities Layer (`src/entities/`)
+
+### User (`src/entities/user/`)
+
+| Type | Description |
+|------|-------------|
+| `UserRole` | `"user" \| "admin"` |
+| `User` | Full user object |
+| `UserListItem` | User for admin list display |
+
+### File (`src/entities/file/`)
+
+| Type | Description |
+|------|-------------|
+| `FileMetadata` | Full file metadata |
+| `FileItem` | File for list display |
+| `UploadingFile` | File with upload progress state |
+
+---
+
+## Features Layer (`src/features/`)
+
+### File Upload (`src/features/file-upload/`)
+
+Complex file upload logic with progress tracking.
+
+| Export | Type | Description |
+|--------|------|-------------|
+| `useFileUpload` | Hook | Upload files with progress, retry, cancel |
+
+### User Management (`src/features/user-management/`)
+
+Admin user action logic.
+
+| Export | Type | Description |
+|--------|------|-------------|
+| `useUserActions` | Hook | Activate, deactivate, promote, demote users |
+
+---
+
+## Widgets Layer (`src/widgets/`)
+
+Smart composite components that use tRPC and compose features.
+
+### Header (`src/widgets/header/`)
+
+Global navigation header with auth state.
+
+### Auth (`src/widgets/auth/`)
+
+| Export | Type | Description |
+|--------|------|-------------|
+| `OAuthButtons` | Component | Google, GitHub, Naver sign-in buttons |
+
+### User List (`src/widgets/user-list/`)
+
+Admin user list with status controls.
+
+| Export | Type | Description |
+|--------|------|-------------|
+| `UserList` | Component | User table with activate/deactivate, role actions |
+
+**Local UI:** `ui/user-row.tsx`, `ui/action-dialog.tsx`
+
+### File List (`src/widgets/file-list/`)
+
+User file list with actions.
+
+| Export | Type | Description |
+|--------|------|-------------|
+| `FileList` | Component | File table with download, delete, view actions |
+
+**Local UI:** `ui/file-row.tsx`, `ui/delete-dialog.tsx`
+
+### File Upload (`src/widgets/file-upload/`)
+
+Drag & drop file uploader.
+
+| Export | Type | Description |
+|--------|------|-------------|
+| `FileUpload` | Component | Dropzone with progress display |
+
+**Props:** `onUploadComplete?`, `maxSizeBytes?`, `acceptedTypes?`
+
+**Local UI:** `ui/dropzone.tsx`, `ui/upload-item.tsx`
+
+### PDF Viewer (`src/widgets/pdf-viewer/`)
+
+PDF viewer using pdf.js.
+
+| Export | Type | Description |
+|--------|------|-------------|
+| `PdfViewer` | Component | PDF document viewer |
+
+**Props:** `url` (required)
 
 ---
 
@@ -88,9 +196,12 @@ Reusable shadcn/ui-style components.
 
 ### Database (`src/server/db/`)
 
-Drizzle ORM with MySQL.
+Drizzle ORM with MySQL. Schema split by domain.
 
-**Tables:** `user`, `session`, `account`, `verification`, `file`
+| Schema File | Tables |
+|-------------|--------|
+| `schema/auth.schema.ts` | `user`, `session`, `account`, `verification` |
+| `schema/file.schema.ts` | `file` |
 
 ### Storage (`src/server/storage/`)
 
@@ -105,6 +216,8 @@ Cloudflare R2 integration.
 | `getPresignedDownloadUrl` | Generate presigned download URL |
 | `generateStorageKey` | Generate unique storage key |
 
+**Env vars:** `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL`
+
 ### tRPC (`src/server/trpc/`)
 
 Type-safe API layer.
@@ -112,13 +225,3 @@ Type-safe API layer.
 **Routers:**
 - `files`: File CRUD operations
 - `admin`: User management (admin only)
-
----
-
-## Utilities (`src/lib/`)
-
-| Function | Description |
-|----------|-------------|
-| `cn` | Tailwind class name merger |
-| `formatBytes` | Format bytes to human-readable |
-| `formatDate` | Format date to locale string |

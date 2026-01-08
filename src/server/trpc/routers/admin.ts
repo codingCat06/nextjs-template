@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { eq, desc } from "drizzle-orm";
 import { router, adminProcedure } from "../init";
-import { user } from "@/server/db/schema";
+import { user } from "@/server/db/schema/index";
 
 export const adminRouter = router({
   getUsers: adminProcedure.query(async ({ ctx }) => {

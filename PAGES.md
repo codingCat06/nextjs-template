@@ -7,10 +7,12 @@ Route catalog for the Next.js Full-Stack Template.
 | Route | Access | Description |
 |-------|--------|-------------|
 | `/` | Guest | Landing page with feature overview |
-| `/sign-in` | Guest | Email/password sign in |
-| `/sign-up` | Guest | Create new account |
+| `/sign-in` | Guest | Email/password + OAuth sign in |
+| `/sign-up` | Guest | Create account (email/password + OAuth) |
 
 **Note:** Authenticated users are redirected to `/dashboard` when accessing auth pages.
+
+**OAuth Providers:** Google, GitHub, Naver (via OAuthButtons widget)
 
 ---
 
@@ -41,7 +43,7 @@ Route catalog for the Next.js Full-Stack Template.
 
 | Route | Method | Description |
 |-------|--------|-------------|
-| `/api/auth/[...all]` | GET, POST | Better Auth handler |
+| `/api/auth/[...all]` | GET, POST | Better Auth handler (email/password + OAuth) |
 | `/api/trpc/[trpc]` | GET, POST | tRPC handler |
 
 ---
@@ -76,3 +78,16 @@ Route catalog for the Next.js Full-Stack Template.
 | `/files` | `files.list`, `files.upload`, `files.delete`, `files.getDownloadUrl` | - |
 | `/files/[id]` | `files.getById`, `files.getDownloadUrl` | - |
 | `/admin/users` | `admin.getUsers`, `admin.setUserActiveStatus`, `admin.setUserRole` | - |
+
+---
+
+## Widgets Used per Page
+
+| Page | Widgets |
+|------|---------|
+| `/sign-in` | `OAuthButtons` |
+| `/sign-up` | `OAuthButtons` |
+| `/files` | `FileUpload`, `FileList` |
+| `/files/[id]` | `PdfViewer` |
+| `/admin/users` | `UserList` |
+| (layout) | `Header` |

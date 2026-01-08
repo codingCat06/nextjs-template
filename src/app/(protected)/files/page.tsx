@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Download, X } from "lucide-react";
-import { FileUpload, FileList, PdfViewer } from "@/features/file-management";
-import type { FileItem } from "@/features/file-management";
-import { Button } from "@/ui/button";
+import { FileUpload, FileList, PdfViewer } from "@/widgets";
+import type { FileItem } from "@/entities/file";
+import { Button } from "@/shared/ui";
 
 interface ViewingFile {
   id: string;

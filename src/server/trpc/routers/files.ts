@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { eq, and, desc } from "drizzle-orm";
 import { router, protectedProcedure } from "../init";
-import { file } from "@/server/db/schema";
+import { file } from "@/server/db/schema/index";
 import {
   uploadFile,
   deleteFile,

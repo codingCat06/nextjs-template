@@ -1,5 +1,5 @@
 import { getServerSession } from "@/core/auth/server";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui";
 import { FileText, Upload, User } from "lucide-react";
 import Link from "next/link";
 

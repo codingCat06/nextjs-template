@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Users, Shield } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui";
 
 export default function AdminPage() {
   return (

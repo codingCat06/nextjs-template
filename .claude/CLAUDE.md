@@ -43,7 +43,7 @@ npm run db:migrate   # Run migrations
 npm run db:studio    # Open Drizzle Studio
 ```
 
-## Architecture
+## Architecture (FSD - Feature-Sliced Design)
 
 ### Layer Structure & Dependencies
 
@@ -51,26 +51,40 @@ npm run db:studio    # Open Drizzle Studio
 src/
 ├── app/            → Next.js App Router pages and layouts
 ├── core/           → Auth, sessions, guards, theme provider
-├── features/       → Domain modules (isolated, no cross-feature deps)
-│   ├── file-management/
-│   └── admin-users/
-├── ui/             → Reusable shadcn/ui style components (no business logic)
-├── server/         → DB, storage, tRPC routers
+├── shared/         → Shared resources (lowest layer)
+│   ├── ui/         → Reusable UI components (no business logic)
+│   └── lib/        → Pure utilities (cn, formatters, trpc client)
+├── entities/       → Business entities (types, base models)
+│   ├── user/       → User types
+│   └── file/       → File types
+├── features/       → User interactions with complex logic
+│   ├── file-upload/      → File upload with progress tracking
+│   └── user-management/  → User activate/deactivate/role actions
+├── widgets/        → Composite UI blocks (smart components)
+│   ├── header/     → Global navigation header
+│   ├── auth/       → OAuth buttons
+│   ├── user-list/  → Admin user list with actions
+│   ├── file-list/  → User file list with actions
+│   ├── file-upload/→ File upload dropzone
+│   └── pdf-viewer/ → PDF viewer component
+├── server/         → Backend (DB, storage, tRPC)
 │   ├── db/         → Drizzle schema and connection
+│   │   └── schema/ → Split schema files (auth, file)
 │   ├── storage/    → R2 integration
 │   └── trpc/       → tRPC routers and procedures
-├── types/          → Shared domain types
-└── lib/            → Pure utilities (formatters, validators, trpc client)
 ```
 
-**Dependency direction:** `ui` → `features` → (`core`, `server`, `types`, `lib`)
+**FSD Layer Hierarchy (lower cannot import upper):**
+`shared` → `entities` → `features` → `widgets` → `app`
 
 ### Key Constraints
 
+- **Lower layers cannot import from upper layers**
 - **Features must not depend on other features**
-- **UI components must not contain business logic** (no DB, auth, or tRPC calls)
+- **Shared UI components must not contain business logic** (no DB, auth, or tRPC calls)
+- **Widgets are smart components** - they can use tRPC, hooks, and compose features
 - **No `any` types** - use `strict: true`
-- **Shared types in `src/types`** - API I/O must be typed with matching runtime validation
+- **Entity types in `src/entities/`** - API I/O must be typed with matching runtime validation
 
 ## Route Groups
 

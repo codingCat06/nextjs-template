@@ -98,41 +98,49 @@ Any change here requires updates to `FEATURES.md` and `PAGES.md`.
 
 ---
 
-## 6) Architecture & folder rules
+## 6) Architecture & folder rules (FSD - Feature-Sliced Design)
 
 ### 6.1 Layer responsibilities
 
-* `src/core/`
+* `src/shared/`
 
-  * auth integration, session helpers, guards, permission checks
+  * `ui/` - reusable UI components only (no business logic, no DB, no auth, no tRPC)
+  * `lib/` - pure utilities (formatters, validators, constants, tRPC client)
+
+* `src/entities/`
+
+  * business entity types (user, file)
+  * base models and interfaces
+  * no logic, only type definitions
 
 * `src/features/`
 
-  * domain modules (file-management, admin-users, etc.)
+  * complex user interaction logic (hooks with business logic)
   * must not depend on other features
+  * examples: file-upload (progress tracking), user-management (role actions)
 
-* `src/ui/`
+* `src/widgets/`
 
-  * reusable UI components only
-  * no business logic (no DB, no auth checks, no tRPC calls)
+  * composite UI blocks (smart components)
+  * can use tRPC, compose features, include local UI parts
+  * examples: header, user-list, file-list, file-upload, pdf-viewer, auth (OAuth buttons)
+
+* `src/core/`
+
+  * auth integration (Better Auth), session helpers, guards, permission checks, theme provider
 
 * `src/server/`
 
-  * db (Drizzle), storage (R2), tRPC routers, server-only helpers
+  * `db/` - Drizzle ORM, schema files (split by domain: auth.schema.ts, file.schema.ts)
+  * `storage/` - R2 integration
+  * `trpc/` - tRPC routers, server-only helpers
 
-* `src/types/`
+### 6.2 FSD Layer hierarchy (lower cannot import upper)
 
-  * shared domain types
+`shared` → `entities` → `features` → `widgets` → `app`
 
-* `src/lib/`
-
-  * small pure utilities (formatters, validators, constants)
-
-### 6.2 Dependency direction
-
-`ui` → `features` → (`core`, `server`, `types`, `lib`)
-
-No circular dependencies.
+* `core` and `server` are cross-cutting: accessible from features, widgets, and app
+* No circular dependencies
 
 ---
 
@@ -140,7 +148,7 @@ No circular dependencies.
 
 * `strict: true`
 * no `any`
-* shared types live in `src/types`
+* entity types live in `src/entities/` (per domain: user, file)
 * API I/O must be typed; runtime validation must match types
 
 ---
